@@ -66,6 +66,18 @@ namespace Tundayne
 
             Vector3 newPivpotPos = pivot.localPosition;
             newPivpotPos.x = targetX;
+
+
+
+
+
+
+
+
+
+
+
+
             newPivpotPos.z = targetY;
 
             Vector3 newCampos = camTrans.localPosition;
