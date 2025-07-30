@@ -1,0 +1,8 @@
+1. InputHandler phải được thực hiện trước StatesManager để đảm bảo rằng StatesManager luôn sử dụng dữ liệu đầu vào 
+cập nhật nhất khi thực hiện các tính toán vật lý và animation của character.
+
+2. InputHandler đang chịu trách nhiệm đọc trạng thái hiện tại của các đầu vào nên được ưu tiên để đảm bảo tính phản hồi
+ngay lập tức.
+    - Nếu trong StatesManager để là FixedUpdate thay vì đang để là FixedTick và Update thay vì đang để là Tick, điều này sẽ khiên cho
+    StatesManager được thực thi trước cả InputHandler, thì khi StatesManager thực thi tính toán chuyển động và animation, nó sẽ sử dụng đầu vào
+    từ khung hình hoặc tick vật lý trước đó. ĐIều này sẽ gây ra độ trễ khiến cho character phản ứng chậm hơn so với khung hình.

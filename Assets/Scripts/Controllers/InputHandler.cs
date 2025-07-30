@@ -32,7 +32,7 @@ namespace Tundayne
 
             delta = Time.fixedDeltaTime;
             GetInput_FixedUpdate();
-            InGame_UpdateStates_FixedUpdate();
+            InGame_UpdateStates_FixedUpdate(); 
             statesManager.FixedTick(delta);
         }
 
