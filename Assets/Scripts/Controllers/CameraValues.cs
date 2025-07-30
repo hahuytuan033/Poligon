@@ -5,10 +5,12 @@ using UnityEngine;
 
 namespace Tundayne
 {
+    [CreateAssetMenu(menuName = "Character Controller/Camera Values")]
     public class CameraValues : ScriptableObject
     {
         public float turnSmooth = 0.1f;
         public float moveSpeed = 9f;
+        public float aimSpeed = 25f;
         public float y_rotation_speed = 8f;
         public float x_rotation_speed = 8f;
         public float minAngle = -35f;

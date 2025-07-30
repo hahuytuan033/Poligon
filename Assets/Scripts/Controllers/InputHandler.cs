@@ -13,16 +13,19 @@ namespace Tundayne
         bool isInit;
 
         float delta;
+        bool aimInput;
 
         public StatesManager statesManager;
-        public Transform cameraHolder;
+        public CameraHandler cameraHandler;
 
         void Start()
         {
             statesManager.Init();
+            cameraHandler.Init(this);
             isInit = true;
         }
 
+        #region FixedUpdate
         void FixedUpdate()
         {
             if (!isInit)
@@ -32,8 +35,10 @@ namespace Tundayne
 
             delta = Time.fixedDeltaTime;
             GetInput_FixedUpdate();
-            InGame_UpdateStates_FixedUpdate(); 
+            InGame_UpdateStates_FixedUpdate();
             statesManager.FixedTick(delta);
+
+            cameraHandler.FixedTick(delta);
         }
 
         void GetInput_FixedUpdate()
@@ -50,13 +55,15 @@ namespace Tundayne
 
             statesManager.input.moveAmount = Mathf.Clamp01(Mathf.Abs(horizontal) + Mathf.Abs(vertical));
 
-            Vector3 moveDir = cameraHolder.forward * vertical;
-            moveDir += cameraHolder.right * horizontal;
+            Vector3 moveDir = cameraHandler.camTrans.forward * vertical;
+            moveDir += cameraHandler.camTrans.right * horizontal;
             moveDir.Normalize();
             statesManager.input.moveDirection = moveDir;
 
         }
+        #endregion
 
+        #region Update 
         void Update()
         {
             if (!isInit)
@@ -65,8 +72,22 @@ namespace Tundayne
             }
 
             delta = Time.deltaTime;
+            GetInput_Update();
+            InGame_UpdateStates_Update();
             statesManager.Tick(delta);
 
         }
+
+        void GetInput_Update()
+        {
+            aimInput = Input.GetMouseButton(1);
+        }
+
+        void InGame_UpdateStates_Update()
+        {
+            statesManager.controllerStates.isAiming = aimInput;
+        }
     }
+    
+    #endregion
 }

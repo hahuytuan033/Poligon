@@ -9,6 +9,7 @@ namespace Tundayne
         public Transform camTrans;
         public Transform target;
         public Transform pivot;
+        public Transform lookAt;
         public bool leftPivot;
         float delta;
 
@@ -27,8 +28,9 @@ namespace Tundayne
 
         public void Init(InputHandler inputHandler)
         {
+            lookAt = this.transform;
             statesManager = inputHandler.statesManager;
-            target =  statesManager.transform;
+            target = statesManager.transform;
         }
 
         public void FixedTick(float d)
@@ -40,6 +42,16 @@ namespace Tundayne
             }
 
             HandlePosition();
+            HandleRotation();
+
+            float speed = cameraValues.moveSpeed;
+            if (statesManager.controllerStates.isAiming)
+            {
+                speed = cameraValues.aimSpeed;
+            }
+
+            Vector3 targetPos = Vector3.Lerp(lookAt.position, target.position, delta * speed);
+            lookAt.position = targetPos;
         }
 
         void HandlePosition()
@@ -66,19 +78,7 @@ namespace Tundayne
 
             Vector3 newPivpotPos = pivot.localPosition;
             newPivpotPos.x = targetX;
-
-
-
-
-
-
-
-
-
-
-
-
-            newPivpotPos.z = targetY;
+            newPivpotPos.y = targetY;
 
             Vector3 newCampos = camTrans.localPosition;
             newCampos.z = targetZ;
@@ -87,6 +87,31 @@ namespace Tundayne
             pivot.localPosition = Vector3.Lerp(pivot.localPosition, newPivpotPos, t);
             camTrans.localPosition = Vector3.Lerp(camTrans.localPosition, newCampos, t);
         }
+
+        void HandleRotation()
+        {
+            mouseX = Input.GetAxis("Mouse X");
+            mouseY = Input.GetAxis("Mouse Y");
+
+            if (cameraValues.turnSmooth > 0)
+            {
+                smoothX = Mathf.SmoothDamp(smoothX, mouseX, ref smoothXVelocity, cameraValues.turnSmooth);
+                smoothY = Mathf.SmoothDamp(smoothY, mouseY, ref smoothYVelocity, cameraValues.turnSmooth);
+            }
+            else
+            {
+                smoothX = mouseX;
+                smoothY = mouseY;
+            }
+
+            lookAngle += smoothX * cameraValues.y_rotation_speed * delta;
+            Quaternion targetRotation = Quaternion.Euler(0, lookAngle, 0);
+            lookAt.rotation = targetRotation;
+
+            tiltAngle -= smoothY * cameraValues.x_rotation_speed * delta;
+            tiltAngle = Mathf.Clamp(tiltAngle, cameraValues.minAngle, cameraValues.maxAngle);
+            pivot.localRotation = Quaternion.Euler(tiltAngle, 0, 0);
+         }
     }
 }
 
