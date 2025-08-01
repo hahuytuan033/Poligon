@@ -9,7 +9,7 @@ namespace Tundayne
         public Transform camTrans;
         public Transform target;
         public Transform pivot;
-        public Transform lookAt;
+        public Transform mTransform;
         public bool leftPivot;
         float delta;
 
@@ -22,70 +22,69 @@ namespace Tundayne
         float lookAngle;
         float tiltAngle;
 
-        public CameraValues cameraValues;
+        public CameraValues values;
 
-        StatesManager statesManager;
+        StatesManager states;
 
-        public void Init(InputHandler inputHandler)
+        public void Init(InputHandler input)
         {
-            lookAt = this.transform;
-            statesManager = inputHandler.statesManager;
-            target = statesManager.transform;
+            mTransform = this.transform;
+            states = input.statesManager;
+            target = states.transform;
         }
 
         public void FixedTick(float d)
         {
             delta = d;
+
             if (target == null)
             {
                 return;
             }
 
-            HandlePosition();
+            HandlePositions();
             HandleRotation();
 
-            float speed = cameraValues.moveSpeed;
-            if (statesManager.controllerStates.isAiming)
+            float speed = values.aimSpeed;
+            if (states.controllerStates.isAiming)
             {
-                speed = cameraValues.aimSpeed;
+                speed = values.aimSpeed;
             }
 
-            Vector3 targetPos = Vector3.Lerp(lookAt.position, target.position, delta * speed);
-            lookAt.position = targetPos;
+            Vector3 targetPosition = Vector3.Lerp(mTransform.position, target.position, delta * speed);
+            mTransform.position = targetPosition;
         }
 
-        void HandlePosition()
+        void HandlePositions()
         {
-            float targetX = cameraValues.normalX;
-            float targetZ = cameraValues.normalZ;
-            float targetY = cameraValues.normalY;
+            float targetX = values.normalX;
+            float targetZ = values.normalZ;
+            float targetY = values.normalY;
 
-            if (statesManager.controllerStates.isCrouching)
+            if (states.controllerStates.isCrouching)
             {
-                targetY = cameraValues.crouchY;
+                targetY = values.crouchY;
             }
-
-            if (statesManager.controllerStates.isAiming)
+            if (states.controllerStates.isAiming)
             {
-                targetX = cameraValues.aimX;
-                targetZ = cameraValues.aimZ;
+                targetX = values.aimX;
+                targetZ = values.aimZ;
             }
-
             if (leftPivot)
             {
                 targetX = -targetX;
             }
 
-            Vector3 newPivpotPos = pivot.localPosition;
-            newPivpotPos.x = targetX;
-            newPivpotPos.y = targetY;
+            Vector3 newPivotPosition = pivot.localPosition;
+            newPivotPosition.x = targetX;
+            newPivotPosition.y = targetY;
 
-            Vector3 newCampos = camTrans.localPosition;
-            newCampos.z = targetZ;
+            Vector3 newCamPosition = camTrans.localPosition;
+            newCamPosition.z = targetZ;
 
-            float t = delta * cameraValues.adaptSpeed;
-            pivot.localPosition = Vector3.Lerp(pivot.localPosition, newPivpotPos, t);
-            camTrans.localPosition = Vector3.Lerp(camTrans.localPosition, newCampos, t);
+            float t = delta * values.adaptSpeed;
+            pivot.localPosition = Vector3.Lerp(pivot.localPosition, newPivotPosition, t);
+            camTrans.localPosition = Vector3.Lerp(camTrans.localPosition, newCamPosition, t);
         }
 
         void HandleRotation()
@@ -93,10 +92,10 @@ namespace Tundayne
             mouseX = Input.GetAxis("Mouse X");
             mouseY = Input.GetAxis("Mouse Y");
 
-            if (cameraValues.turnSmooth > 0)
+            if (values.turnSmooth > 0)
             {
-                smoothX = Mathf.SmoothDamp(smoothX, mouseX, ref smoothXVelocity, cameraValues.turnSmooth);
-                smoothY = Mathf.SmoothDamp(smoothY, mouseY, ref smoothYVelocity, cameraValues.turnSmooth);
+                smoothX = Mathf.SmoothDamp(smoothX, mouseX, ref smoothXVelocity, values.turnSmooth);
+                smoothY = Mathf.SmoothDamp(smoothY, mouseY, ref smoothYVelocity, values.turnSmooth);
             }
             else
             {
@@ -104,14 +103,14 @@ namespace Tundayne
                 smoothY = mouseY;
             }
 
-            lookAngle += smoothX * cameraValues.y_rotation_speed * delta;
+            lookAngle += smoothX * values.y_rotation_speed;
             Quaternion targetRotation = Quaternion.Euler(0, lookAngle, 0);
-            lookAt.rotation = targetRotation;
+            mTransform.rotation = targetRotation;
 
-            tiltAngle -= smoothY * cameraValues.x_rotation_speed * delta;
-            tiltAngle = Mathf.Clamp(tiltAngle, cameraValues.minAngle, cameraValues.maxAngle);
+            tiltAngle -= smoothY * values.x_rotation_speed;
+            tiltAngle = Mathf.Clamp(tiltAngle, values.minAngle, values.maxAngle);
             pivot.localRotation = Quaternion.Euler(tiltAngle, 0, 0);
-         }
+        }
     }
 }
 

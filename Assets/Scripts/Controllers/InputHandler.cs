@@ -25,6 +25,14 @@ namespace Tundayne
             isInit = true;
         }
 
+        public void InitInGame()
+        {
+            statesManager.Init();
+            cameraHandler.Init(this);
+            isInit = true;
+        }
+
+
         #region FixedUpdate
         void FixedUpdate()
         {
@@ -50,6 +58,7 @@ namespace Tundayne
 
         void InGame_UpdateStates_FixedUpdate()
         {
+            statesManager.input.rotateDirection = cameraHandler.camTrans.forward;
             statesManager.input.horizontal = horizontal;
             statesManager.input.vertical = vertical;
 
@@ -59,6 +68,8 @@ namespace Tundayne
             moveDir += cameraHandler.camTrans.right * horizontal;
             moveDir.Normalize();
             statesManager.input.moveDirection = moveDir;
+
+            statesManager.input.rotateDirection = cameraHandler.mTransform.forward;
 
         }
         #endregion
@@ -87,7 +98,14 @@ namespace Tundayne
         {
             statesManager.controllerStates.isAiming = aimInput;
         }
+        #endregion
+    }
+
+    public enum GamePhase
+    {
+        inGame,
+        inMenu
     }
     
-    #endregion
+    
 }

@@ -12,7 +12,7 @@ namespace Tundayne
         public float moveSpeed = 4f;
         public float SprintSpeed = 6f;
         public float crouchSpeed = 2f;
-        public float animSpeed = 2f;
+        public float aimSpeed = 2f;
         public float rotationSpeed = 8f;
         
     }

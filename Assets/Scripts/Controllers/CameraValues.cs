@@ -17,9 +17,10 @@ namespace Tundayne
         public float maxAngle = 35f;
         public float normalZ = -3f;
         public float normalX;
-        public float aimZ = -0.5f;
-        public float aimX = 0;
         public float normalY;
+        public float aimZ = -0.5f;
+        public float aimX;
+        public float aimY;
         public float crouchY;
         public float adaptSpeed = 9f;
     }

@@ -19,6 +19,7 @@ namespace Tundayne
             public float moveAmount;
             public Vector3 moveDirection;
             public Vector3 animDirection;
+            public Vector3 rotateDirection;
         }
 
         [System.Serializable]
@@ -31,6 +32,7 @@ namespace Tundayne
             public bool isInteracting;
         }
 
+        #region References
         public Animator anim;
         public GameObject activeModel;
         [HideInInspector]
@@ -46,7 +48,9 @@ namespace Tundayne
         public LayerMask ignoreForGround;
         public CharState currentState;
         public float delta;
+        #endregion
 
+        #region Init
         public void Init()
         {
 
@@ -99,7 +103,9 @@ namespace Tundayne
                 rb.gameObject.layer = 10; // Layer 10 là layer Ragdoll
             }
         }
+        #endregion
 
+        #region FixedUpdate
         public void FixedTick(float d)
         {
             delta = d;
@@ -109,13 +115,13 @@ namespace Tundayne
                     controllerStates.onGround = OnGround();
                     if (controllerStates.isAiming)
                     {
-
+                        MovementAiming();
                     }
                     else
                     {
                         MovementNormal();
-                        RotationNormal();
                     }
+                    RotationNormal();
 
                     break;
                 case CharState.onAir:
@@ -159,7 +165,11 @@ namespace Tundayne
 
         void RotationNormal()
         {
-            Vector3 targetDir = input.moveDirection;
+            if (!controllerStates.isAiming)
+            {
+                input.rotateDirection = input.moveDirection;
+            }
+            Vector3 targetDir = input.rotateDirection;
             targetDir.y = 0; // Đảm bảo không có thành phần Y
 
             if (targetDir == Vector3.zero)
@@ -172,16 +182,19 @@ namespace Tundayne
             transform.root.rotation = targetRotation;
         }
 
-        void HandleAnimationNormal()
-        {
-            float animVertical = input.moveAmount;
-            anim.SetFloat("Vertical", animVertical, 0.15f, delta);
-        }
-
         void MovementAiming()
         {
-
+            // Trong file ControllerStatistics.cs, bạn cần thêm dòng này:
+            // public float aimSpeed = 2f;
+            // Nếu chưa có, code sẽ báo lỗi. Giả sử bạn đã thêm.
+            // float speed = controllerStats.aimSpeed;
+            float speed = controllerStats.moveSpeed; // Tạm dùng movespeed vì aimSpeed chưa có
+            Vector3 v = input.moveDirection * speed;
+            rigid.velocity = v;
         }
+        #endregion  // <---- DÒNG NÀY ĐÃ ĐƯỢC THÊM VÀO
+
+        #region Update
 
         public void Tick(float d)
         {
@@ -190,7 +203,7 @@ namespace Tundayne
             {
                 case CharState.normal:
                     controllerStates.onGround = OnGround();
-                    HandleAnimationNormal();
+                    HandleAnimationAll(); // Gọi hàm này để xử lý tất cả animation
                     break;
                 case CharState.onAir:
                     controllerStates.onGround = OnGround();
@@ -203,6 +216,39 @@ namespace Tundayne
                     break;
             }
         }
+
+        void HandleAnimationAll()
+        {
+            anim.SetBool("spring", controllerStates.isRunning);
+            anim.SetBool("aiming", controllerStates.isAiming);
+            anim.SetBool("crouching", controllerStates.isCrouching);
+
+            if (controllerStates.isAiming)
+            {
+                HandleAnimationAiming();
+            }
+            else
+            {
+                HandleAnimationNormal();
+            }
+        }
+
+        void HandleAnimationNormal()
+        {
+            float animVertical = input.moveAmount;
+            anim.SetFloat("Vertical", animVertical, 0.15f, delta);
+        }
+
+        void HandleAnimationAiming()
+        {
+            float v = input.vertical;
+            float h = input.horizontal;
+
+            anim.SetFloat("horizontal", h, 0.2f, delta);
+            anim.SetFloat("vertical", v, 0.2f, delta);
+        }
+
+        #endregion
 
         // kiểm tra xem có mặt đất ngay bên dưới nhân vật không
         bool OnGround()
